@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import re
 import calendar
+import win32com.client as win32
 
 data = {
     'fid': 'Fund Id',
@@ -11,7 +12,6 @@ data = {
     'fix': '5d',
     'pm_ratify': True
 }
-
 
 class MailSender:
     # https://uic.jp/calendar/
@@ -112,9 +112,18 @@ class MailSender:
         else:
             return 'undefined fix text'
 
+    def write_mail(self):
+        olApp = win32.Dispatch('Outlook.Application')
+        olNS = olApp.GetNameSpace('MAPI')
+
+        mail = olApp.CreateItem(0)
+        mail.Subject = self.create_title()
+        mail.BodyFormat = 1 # plain text
+        mail.Body = self.create_content()
+        mail.To = 'happy1294123@gmail.com'
+        mail.Display()
 
 sender = MailSender(data)
-content = sender.create_content()
-print(content)
+sender.write_mail()
 
 
