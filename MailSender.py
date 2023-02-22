@@ -1,17 +1,17 @@
 from datetime import datetime, timedelta
 import re
 import calendar
-import win32com.client as win32
+# import win32com.client as win32   
 
-data = {
-    'fid': 'Fund Id',
-    'fname': 'Fund Name',
-    'rname': 'Rule Name',
-    'note': 'this is note Note(nothing)',
-    'occurred': '2023-02-11 18:00:00',
-    'fix': '5d',
-    'pm_ratify': True
-}
+# data = {
+#     'fid': 'Fund Id',
+#     'fname': 'Fund Name',
+#     'rname': 'Rule Name',
+#     'note': 'this is note Note(nothing)',
+#     'occurred': '2023-02-11 18:00:00',
+#     'fix': '5d',
+#     'pm_ratify': True
+# }
 
 class MailSender:
     # https://uic.jp/calendar/
@@ -42,10 +42,10 @@ class MailSender:
 
     def create_content(self):
         content = ''
-        content += f"【Fund name】({self.data['fid']}){self.data['fname']}\n"
-        content += f"【Occurred date】{self.get_occurred_date().strftime('%m/%d')}\n"
-        content += f"【Fixed Deadline】{self.get_fix_date().strftime('%m/%d')}\n"
-        content += f"【Breadch Detail】{self.get_note()} where rule {self.data['rname']}\n"
+        content += f"【Fund name】({self.data['fid']}){self.data['fname']}<br>"
+        content += f"【Occurred date】{self.get_occurred_date().strftime('%m/%d')}<br>"
+        content += f"【Fixed Deadline】{self.get_fix_date().strftime('%m/%d')}<br>"
+        content += f"【Breadch Detail】{self.get_note()} where rule {self.data['rname']}<br>"
         content += f"【Action Required】{self.get_fix_text()}"
         return content
 
@@ -113,17 +113,44 @@ class MailSender:
             return 'undefined fix text'
 
     def write_mail(self):
-        olApp = win32.Dispatch('Outlook.Application')
-        olNS = olApp.GetNameSpace('MAPI')
+        # windows
+        # olApp = win32.Dispatch('Outlook.Application')
+        # olNS = olApp.GetNameSpace('MAPI')
 
-        mail = olApp.CreateItem(0)
-        mail.Subject = self.create_title()
-        mail.BodyFormat = 1 # plain text
-        mail.Body = self.create_content()
-        mail.To = 'happy1294123@gmail.com'
-        mail.Display()
+        # mail = olApp.CreateItem(0)
+        # mail.Subject = self.create_title()
+        # mail.BodyFormat = 1 # plain text
+        # mail.Body = self.create_content()
+            # mail.HTMLbody = self.create_content()
+        # mail.To = 'happy1294123@gmail.com'
+            # mail.CC = 'cc1@gmail.com; cc2@gmail.com'
+        # mail.Display()
 
-sender = MailSender(data)
-sender.write_mail()
+        # Mac
+        from appscript import app, k
+        outlook = app('Microsoft Outlook')
+
+        msg = outlook.make(
+            new=k.outgoing_message,
+            with_properties={
+                k.subject: self.create_title(),
+                k.plain_text_content: self.create_content()})
+
+        msg.make(
+            new = k.recipient,
+            with_properties={
+                k.email_address: {
+                    k.name: 'Fake Person',
+                    k.address: 'fakeperson@gmail.com'}})
+
+        msg.open()
+        msg.activate()
+
+
+
+
+
+# sender = MailSender(data)
+# sender.write_mail()
 
 
